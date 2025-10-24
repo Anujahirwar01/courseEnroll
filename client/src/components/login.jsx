@@ -1,12 +1,17 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
-import axios from 'axios'
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
 
 const Login = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({
@@ -17,11 +22,23 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try{
-            const response = await axios.post('http://localhost:3000/api/users/login', formData);
-            console.log("Login successful:", response.data);
-        }catch(err){
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await login(formData);
+
+            if (result.success) {
+                console.log("Login successful:", result.user);
+                navigate('/'); // Redirect to home page
+            } else {
+                setError(result.error);
+            }
+        } catch (err) {
             console.error("Login error:", err);
+            setError('Login failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,7 +57,12 @@ const Login = () => {
                 {/* Form Container */}
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                                {error}
+                            </div>
+                        )}
 
                         {/* Email Field */}
                         <div>
@@ -79,9 +101,17 @@ const Login = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full mt-6 bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm transition duration-200"
+                            disabled={loading}
+                            className="w-full mt-6 bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                            Login
+                            {loading ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Logging in...
+                                </>
+                            ) : (
+                                'Login'
+                            )}
                         </button>
                     </form>
 
@@ -89,7 +119,7 @@ const Login = () => {
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-600">
                             Don't have an account?{' '}
-                            <Link 
+                            <Link
                                 to="/signup"
                                 className="text-blue-600 hover:text-blue-800 font-medium underline"
                             >
@@ -99,7 +129,7 @@ const Login = () => {
                     </div>
                 </div>
 
-            
+
             </div>
         </div>
     )

@@ -144,9 +144,9 @@ export default function Courses() {
                     <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
                     <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
                     <a href="#about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</a>
-                    <button className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
+                    <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
                         Sign Up
-                    </button>
+                    </Link>
                 </div>
 
           {/* Mobile Menu Button */}
@@ -183,7 +183,7 @@ export default function Courses() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search courses, instructors..."
+                placeholder="Search courses..."
                 className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -288,13 +288,13 @@ export default function Courses() {
                   
                   <div className="flex items-center justify-between mb-3 text-xs text-gray-500">
                     <div className="flex items-center">
-                      <Video className="w-3 h-3 mr-1" />
-                      {course.lessons} lessons
+                      {/* <Video className="w-3 h-3 mr-1" /> */}
+                      {course.lessons} Questions
                     </div>
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       <Clock className="w-3 h-3 mr-1" />
                       {course.hours}h
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex items-center justify-between mb-3 pb-3 border-b">
@@ -310,9 +310,9 @@ export default function Courses() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-gray-600">
+                    {/* <div className="text-xs text-gray-600">
                       by <span className="font-semibold text-gray-900">{course.instructor}</span>
-                    </div>
+                    </div> */}
                     <button className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition">
                       Enroll
                     </button>

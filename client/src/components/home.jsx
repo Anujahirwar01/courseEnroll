@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { BookOpen, Users, Shield, TrendingUp, Menu, X, ChevronRight, Star, Clock, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Profile from './profile';
+import { useAuth } from '../context/authcontext.jsx';
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Debug: Check what we're getting from auth
+  console.log('Auth Debug:', { user, isAuthenticated, isLoading });
 
   const courses = [
     {
@@ -67,50 +73,73 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-    {/* Navigation */}
-    <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      {/* Navigation */}
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-14">
-                <Link to="/" className="flex items-center space-x-2">
-                    <div className="bg-blue-600 p-1.5 rounded-md">
-                        <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
-                        EduEnroll
-                    </span>
-                </Link>
+          <div className="flex justify-between items-center h-14">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="bg-blue-600 p-1.5 rounded-md">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
+                EduEnroll
+              </span>
+            </Link>
 
-                <div className="hidden md:flex items-center space-x-6">
-                    <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-                    <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
-                    <a href="#about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</a>
-                    <button className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
-                        Sign Up
-                    </button>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
+              <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
+              <a href="#about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</a>
+
+              {isAuthenticated ? (
+                <Profile user={user} />
+              ) : isLoading ? (
+                <div className="w-8 h-8 animate-spin border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  
+                  <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
+                    Sign Up
+                  </Link>
                 </div>
+              )}
+            </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-              <button 
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
                 className="p-1"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
-          </div>
+            </div>
 
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
-              <a href="#courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</a>
-              <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
-              <a href="#about" className="block text-sm text-gray-700 hover:text-blue-600">About</a>
-              <button className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm">
-                Sign Up
-              </button>
-            </div>
-          )}
-            </div>
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
+                <Link to="/courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</Link>
+                <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
+                <a href="#about" className="block text-sm text-gray-700 hover:text-blue-600">About</a>
+
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-900 font-medium">Welcome, {user?.name}</p>
+                    <Link to="/profile" className="block text-sm text-gray-700 hover:text-blue-600">My Profile</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Link to="/login" className="block w-full bg-gray-100 text-gray-700 px-4 py-1.5 rounded-md text-sm text-center">
+                      Login
+                    </Link>
+                    <Link to="/signup" className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm text-center">
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -130,9 +159,9 @@ export default function Home() {
               Secure, modern platform for students. Free courses, track Growth, and build your future with cutting-edge technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-base font-semibold hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center">
+              <Link to="/courses" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-base font-semibold hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center">
                 Browse Courses <ChevronRight className="ml-2 w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -193,7 +222,7 @@ export default function Home() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div 
+            <div
               key={index}
               className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition transform hover:-translate-y-1 border border-gray-100"
             >

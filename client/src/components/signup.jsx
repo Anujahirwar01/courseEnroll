@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
-import axios from 'axios'
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
 
 const Signup = () => {
     const [formData, setFormData] = useState({
@@ -8,6 +8,11 @@ const Signup = () => {
         email: '',
         password: ''
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const { register } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({
@@ -18,12 +23,24 @@ const Signup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
-        try{
-            const response = await axios.post('http://localhost:3000/api/users/register', formData);
-            console.log("Signup successful:", response.data);
-        }catch(err){
-            console.error("Signup error:", err);        }
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await register(formData);
+
+            if (result.success) {
+                console.log("Signup successful:", result.user);
+                navigate('/'); // Redirect to home page
+            } else {
+                setError(result.error);
+            }
+        } catch (err) {
+            console.error("Signup error:", err);
+            setError('Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -41,6 +58,13 @@ const Signup = () => {
                 {/* Form Container */}
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                                {error}
+                            </div>
+                        )}
+
                         {/* Name Field */}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -111,25 +135,33 @@ const Signup = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full mt-6 bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm transition duration-200"
+                            disabled={loading}
+                            className="w-full mt-6 bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                            Create Account
+                            {loading ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Creating Account...
+                                </>
+                            ) : (
+                                'Create Account'
+                            )}
                         </button>
                     </form>
-                                        <div className="mt-4 text-center">
-                                            <p className="text-sm text-gray-600">
-                                                Already have an account?{' '}
-                                                <Link 
-                                                    to="/login"
-                                                    className="text-blue-600 hover:text-blue-800 font-medium underline"
-                                                >
-                                                    Sign In
-                                                </Link>
-                                            </p>
-                                        </div>
-                                    </div>
+                    <div className="mt-4 text-center">
+                        <p className="text-sm text-gray-600">
+                            Already have an account?{' '}
+                            <Link
+                                to="/login"
+                                className="text-blue-600 hover:text-blue-800 font-medium underline"
+                            >
+                                Sign In
+                            </Link>
+                        </p>
+                    </div>
+                </div>
 
-                                    {/* Additional Info */}
+                {/* Additional Info */}
                 <div className="text-center mt-4">
                     <p className="text-xs text-gray-500 leading-tight">
                         By creating an account, you agree to our privacy policy and terms of service.

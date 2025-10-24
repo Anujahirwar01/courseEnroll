@@ -1,13 +1,13 @@
 import './App.css'
-import Signup from './components/signup'
 import AppRoutes from './routes/approute'
+import { AuthProvider } from './context/authcontext'
 
 function App() {
 
   return (
-    <>
-    <AppRoutes/>
-    </>
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 
