@@ -142,8 +142,8 @@ export default function Courses() {
 
                 <div className="hidden md:flex items-center space-x-6">
                     <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-                    <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
-                    <a href="#about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</a>
+                    <Link to="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
+                    <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
                     <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
                         Sign Up
                     </Link>
@@ -179,7 +179,7 @@ export default function Courses() {
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <div className="grid md:grid-cols-12 gap-3">
             {/* Search */}
-            <div className="md:col-span-5 relative">
+            <div className="md:col-span-5 w-100 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -191,7 +191,7 @@ export default function Courses() {
             </div>
 
             {/* Category Filter */}
-            <div className="md:col-span-3 relative">
+            <div className="md:col-span-3 ml-30 w-40 relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <select
                 className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
@@ -208,7 +208,7 @@ export default function Courses() {
             </div>
 
             {/* Sort By */}
-            <div className="md:col-span-2 relative">
+            {/* <div className="md:col-span-2 relative">
               <select
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                 value={sortBy}
@@ -220,10 +220,10 @@ export default function Courses() {
                 <option value="duration">Duration</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
+            </div> */}
 
             {/* View Toggle */}
-            <div className="md:col-span-2 flex items-center space-x-2">
+            <div className="md:col-span-2 flex items-centern ml-28 w-30 space-x-2">
               <button
                 className={`flex-1 p-2 rounded-md transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setViewMode('grid')}

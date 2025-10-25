@@ -3,6 +3,8 @@ import Signup from "../components/signup";
 import Login from "../components/login";
 import Home from "../components/home";
 import Courses from "../components/courses";
+import About from "../components/about";
+import ProfileInside from "../components/profileinside";
 
 const AppRoutes = () => {
     return (
@@ -12,6 +14,8 @@ const AppRoutes = () => {
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/" element={<Home/>}/>
                 <Route path="/courses" element={<Courses/>}/>
+                <Route path="/about" element={<About/>}/>
+                <Route path="/profile" element={<ProfileInside/>}/>
             </Routes>
         </BrowserRouter>
     )

@@ -89,7 +89,7 @@ export default function Home() {
             <div className="hidden md:flex items-center space-x-6">
               <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
               <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
-              <a href="#about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</a>
+              <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
 
               {isAuthenticated ? (
                 <Profile user={user} />
@@ -120,7 +120,7 @@ export default function Home() {
               <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
                 <Link to="/courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</Link>
                 <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
-                <a href="#about" className="block text-sm text-gray-700 hover:text-blue-600">About</a>
+                <Link to="/about" className="block text-sm text-gray-700 hover:text-blue-600">About</Link>
 
                 {isAuthenticated ? (
                   <div className="space-y-2">
@@ -306,12 +306,12 @@ export default function Home() {
                 </div>
                 <span className="text-xl font-bold text-white">EduEnroll</span>
               </div>
-              <p className="text-gray-400">Modern course enrollment platform built with MERN stack</p>
+              <p className="text-gray-400">Modern course enrollment platform built for Students.</p>
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Platform</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-blue-400 transition">Browse Courses</a></li>
+                <li><Link to="/courses" className="hover:text-blue-400 transition">Browse Courses</Link></li>
                 <li><a href="#" className="hover:text-blue-400 transition">My Learning</a></li>
                 <li><a href="#" className="hover:text-blue-400 transition">Certificates</a></li>
               </ul>
@@ -319,9 +319,9 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4">Company</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-blue-400 transition">About Us</a></li>
+                <li><Link to="/about" className="hover:text-blue-400 transition">About Us</Link></li>
                 <li><a href="#" className="hover:text-blue-400 transition">Contact</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition">Careers</a></li>
+                {/* <li><a href="#" className="hover:text-blue-400 transition">Careers</a></li> */}
               </ul>
             </div>
             <div>
@@ -334,7 +334,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 EduEnroll. Built with React, Node.js, Express & MongoDB.</p>
+            <p>&copy; 2025 EduEnroll. Built by Student, For the Students.</p>
           </div>
         </div>
       </footer>
