@@ -2,7 +2,7 @@ import React ,{useState} from 'react';
 import {  Target, CheckCircle, Globe,BookOpen, Users, Shield, TrendingUp, Menu, X, ChevronRight, Star, Clock, Award} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
-
+import Profile from './profile';
 
 const About = () => {
       const { user, isAuthenticated, isLoading } = useAuth();
@@ -94,7 +94,7 @@ const About = () => {
 
             <div className="hidden md:flex items-center space-x-6">
               <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-              <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
+              <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
               <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
 
               {isAuthenticated ? (

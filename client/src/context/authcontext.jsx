@@ -8,16 +8,41 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Fallback API URL if environment variable is not loaded
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
     useEffect(() => {
-        console.log('API Base URL:', API_BASE_URL);
-        console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
-        // Skip auth check for now since we don't have proper JWT setup
-        setIsLoading(false);
-        setIsAuthenticated(false);
-        setUser(null);
+        const initializeAuth = async () => {
+            console.log('API Base URL:', API_BASE_URL);
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                try {
+                    // Use full API URL and correct endpoint
+                    const response = await axios.get(`${API_BASE_URL}/users/profile`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    if (response.data.user) {
+                        setUser(response.data.user);
+                        setIsAuthenticated(true);
+                    }
+                } catch (error) {
+                    console.error('Token validation failed:', error);
+                    // Token invalid - clear it
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    setIsAuthenticated(false);
+                }
+            } else {
+                // No token found
+                setUser(null);
+                setIsAuthenticated(false);
+            }
+
+            setIsLoading(false);
+        };
+
+        initializeAuth();
     }, []);
 
     const checkAuthStatus = async () => {
@@ -37,14 +62,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const validateToken = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            logout();
+            return false;
+        }
+        return true;
+    };
+
     const login = async (credentials) => {
         try {
-            const res = await axios.post(`${API_BASE_URL}/users/login`, credentials, {
-                withCredentials: true
-            });
-            setUser(res.data.user);
-            setIsAuthenticated(true);
-            return { success: true, user: res.data.user };
+            const res = await axios.post(`${API_BASE_URL}/users/login`, credentials);
+
+            if (res.data.token && res.data.user) {
+                // Store token in localStorage
+                localStorage.setItem('token', res.data.token);
+                setUser(res.data.user);
+                setIsAuthenticated(true);
+                return { success: true, user: res.data.user };
+            }
+
+            return { success: false, error: "Invalid response from server" };
         } catch (err) {
             console.error("Login failed", err);
             return { success: false, error: err.response?.data?.message || "Login failed" };
@@ -53,12 +92,17 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         try {
-            const res = await axios.post(`${API_BASE_URL}/users/register`, userData, {
-                withCredentials: true
-            });
-            setUser(res.data.user);
-            setIsAuthenticated(true);
-            return { success: true, user: res.data.user };
+            const res = await axios.post(`${API_BASE_URL}/users/register`, userData);
+
+            if (res.data.token && res.data.user) {
+                // Store token in localStorage
+                localStorage.setItem('token', res.data.token);
+                setUser(res.data.user);
+                setIsAuthenticated(true);
+                return { success: true, user: res.data.user };
+            }
+
+            return { success: false, error: "Invalid response from server" };
         } catch (err) {
             console.error("Registration failed", err);
             return { success: false, error: err.response?.data?.message || "Registration failed" };
@@ -67,14 +111,17 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.get(`${API_BASE_URL}/users/logout`, {
-                withCredentials: true,
-            });
-            setUser(null);
-            setIsAuthenticated(false);
+            const token = localStorage.getItem('token');
+            if (token) {
+                await axios.get(`${API_BASE_URL}/users/logout`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
         } catch (err) {
             console.error("Logout failed", err);
-            // Still clear local state even if server logout fails
+        } finally {
+            // Always clear local state and token
+            localStorage.removeItem('token');
             setUser(null);
             setIsAuthenticated(false);
         }

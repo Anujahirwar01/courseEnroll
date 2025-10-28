@@ -15,20 +15,33 @@ import {
     Clock,
     Star,
     TrendingUp,
-    Target
+    Target,
+    Menu,
+
 } from 'lucide-react';
 import { useAuth } from '../context/authcontext';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import Profile from './profile';
 
 const ProfileInside = () => {
     const { user, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [profileExists, setProfileExists] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const {isAuthenticated } = useAuth();
+
     const [profileData, setProfileData] = useState({
-        name: user?.name || 'John Doe',
-        email: user?.email || 'john.doe@example.com',
-        phone: '+1 (555) 123-4567',
-        location: 'New York, USA',
-        bio: 'Passionate learner and technology enthusiast. Currently pursuing full-stack development and excited about building innovative solutions.',
-        joinDate: 'January 2024',
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: '',
+        location: '',
+        bio: '',
+        joinDate: '',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
     });
 
@@ -90,19 +103,153 @@ const ProfileInside = () => {
         }
     ]);
 
-    const handleEdit = () => {
-        setIsEditing(true);
+    // API Base URL
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+    // Load profile data on component mount
+    useEffect(() => {
+        if (user) {
+            loadProfile();
+        }
+    }, [user]);
+
+    // Load user profile from backend
+    const loadProfile = async () => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/users/profile-data`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.data.profile) {
+                const profile = response.data.profile;
+                setProfileData({
+                    name: profile.name || user?.name || '',
+                    email: profile.email || user?.email || '',
+                    phone: profile.phone || '',
+                    location: profile.location || '',
+                    bio: profile.bio || '',
+                    joinDate: formatJoinDate(profile.joinDate || profile.createdAt),
+                    avatar: profile.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
+                });
+                setProfileExists(true);
+            }
+        } catch (error) {
+            if (error.response?.status === 404) {
+                // Profile doesn't exist, show create form
+                setProfileExists(false);
+                setProfileData(prev => ({
+                    ...prev,
+                    name: user?.name || '',
+                    email: user?.email || ''
+                }));
+            } else {
+                console.error('Error loading profile:', error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
-        // Here you would typically save to backend
-        console.log('Saving profile data:', profileData);
+    // Format join date
+    const formatJoinDate = (dateString) => {
+        if (!dateString) return 'Recently';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long'
+        });
+    };
+
+    // Validate profile data
+    const validateProfile = () => {
+        const newErrors = {};
+
+        if (!profileData.name.trim()) {
+            newErrors.name = 'Name is required';
+        }
+
+        if (profileData.bio && profileData.bio.length > 500) {
+            newErrors.bio = 'Bio must be less than 500 characters';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleEdit = () => {
+        setIsEditing(true);
+        setErrors({});
+        setSuccessMessage('');
+    };
+
+    const handleSave = async () => {
+        if (!validateProfile()) {
+            return;
+        }
+
+        setIsSaving(true);
+        setErrors({});
+
+        try {
+            const token = localStorage.getItem('token');
+            const endpoint = profileExists ? 'profile' : 'profile';
+            const method = profileExists ? 'put' : 'post';
+
+            const response = await axios[method](`${API_BASE_URL}/users/${endpoint}`, {
+                name: profileData.name,
+                phone: profileData.phone,
+                location: profileData.location,
+                bio: profileData.bio,
+                avatar: profileData.avatar
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data.profile) {
+                const savedProfile = response.data.profile;
+                setProfileData({
+                    ...profileData,
+                    joinDate: formatJoinDate(savedProfile.joinDate || savedProfile.createdAt)
+                });
+                setProfileExists(true);
+                setIsEditing(false);
+                setSuccessMessage(profileExists ? 'Profile updated successfully!' : 'Profile created successfully!');
+
+                // Clear success message after 3 seconds
+                setTimeout(() => setSuccessMessage(''), 3000);
+            }
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                // Handle validation errors
+                const validationErrors = {};
+                error.response.data.errors.forEach(err => {
+                    validationErrors[err.path] = err.msg;
+                });
+                setErrors(validationErrors);
+            } else {
+                setErrors({ general: 'Failed to save profile. Please try again.' });
+            }
+            console.error('Error saving profile:', error);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleCancel = () => {
         setIsEditing(false);
-        // Reset to original data if needed
+        setErrors({});
+        setSuccessMessage('');
+        // Reload original data
+        if (profileExists) {
+            loadProfile();
+        }
     };
 
     const handleInputChange = (field, value) => {
@@ -119,12 +266,108 @@ const ProfileInside = () => {
         return 'bg-gray-400';
     };
 
+    // Show loading screen
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-2">
+                <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
+                    <div className="bg-white rounded shadow-sm p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="text-gray-600 mt-4">Loading profile...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 py-2">
+        <div className="min-h-screen bg-gray-50 ">
+            <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="bg-blue-600 p-1.5 rounded-md">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
+                EduEnroll
+              </span>
+            </Link>
+
+            <div className="hidden md:flex items-center space-x-6">
+              <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
+              <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
+              <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
+
+              {isAuthenticated ? (
+                <Profile user={user} />
+              ) : isLoading ? (
+                <div className="w-8 h-8 animate-spin border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  
+                  <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                className="p-1"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
+                <Link to="/courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</Link>
+                <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
+                <Link to="/about" className="block text-sm text-gray-700 hover:text-blue-600">About</Link>
+
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-900 font-medium">Welcome, {user?.name}</p>
+                    <Link to="/profile" className="block text-sm text-gray-700 hover:text-blue-600">My Profile</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Link to="/login" className="block w-full bg-gray-100 text-gray-700 px-4 py-1.5 rounded-md text-sm text-center">
+                      Login
+                    </Link>
+                    <Link to="/signup" className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm text-center">
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
             <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
 
+                {/* Success Message */}
+                {successMessage && (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-3 text-sm">
+                        {successMessage}
+                    </div>
+                )}
+
+                {/* General Error Message */}
+                {errors.general && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-3 text-sm">
+                        {errors.general}
+                    </div>
+                )}
+
                 {/* Profile Header */}
-                <div className="bg-white rounded shadow-sm mb-3">
+                <div className="bg-white rounded shadow-sm mt-3 mb-3">
                     <div className="relative h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t">
                         <div className="absolute -bottom-6 left-3">
                             <div className="relative">
@@ -151,10 +394,20 @@ const ProfileInside = () => {
                                 <div className="flex space-x-1">
                                     <button
                                         onClick={handleSave}
-                                        className="bg-green-600 text-white px-1.5 py-0.5 rounded text-xs font-medium hover:bg-green-700 transition flex items-center space-x-0.5"
+                                        disabled={isSaving}
+                                        className="bg-green-600 text-white px-1.5 py-0.5 rounded text-xs font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center space-x-0.5"
                                     >
-                                        <Save className="w-2.5 h-2.5" />
-                                        <span>Save</span>
+                                        {isSaving ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-2.5 w-2.5 border-b border-white"></div>
+                                                <span>Saving...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="w-2.5 h-2.5" />
+                                                <span>Save</span>
+                                            </>
+                                        )}
                                     </button>
                                     <button
                                         onClick={handleCancel}
@@ -182,14 +435,18 @@ const ProfileInside = () => {
                                             type="text"
                                             value={profileData.name}
                                             onChange={(e) => handleInputChange('name', e.target.value)}
-                                            className="text-lg font-bold text-gray-900 mb-0.5 border-b border-blue-300 focus:border-blue-500 outline-none bg-transparent w-full"
+                                            className={`text-lg font-bold text-gray-900 mb-0.5 border-b ${errors.name ? 'border-red-300' : 'border-blue-300'} focus:border-blue-500 outline-none bg-transparent w-full`}
                                         />
+                                        {errors.name && <span className="text-red-500 text-xs">{errors.name}</span>}
+
                                         <textarea
                                             value={profileData.bio}
                                             onChange={(e) => handleInputChange('bio', e.target.value)}
-                                            className="text-gray-600 mb-2 border border-gray-300 rounded p-1.5 w-full resize-none focus:border-blue-500 outline-none text-xs"
+                                            className={`text-gray-600 mb-2 border ${errors.bio ? 'border-red-300' : 'border-gray-300'} rounded p-1.5 w-full resize-none focus:border-blue-500 outline-none text-xs`}
                                             rows="2"
+                                            placeholder="Tell us about yourself..."
                                         />
+                                        {errors.bio && <span className="text-red-500 text-xs">{errors.bio}</span>}
                                     </>
                                 )}
 

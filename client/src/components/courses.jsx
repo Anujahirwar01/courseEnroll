@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { BookOpen, Search, Filter, Clock, Users, Star, ChevronDown, Grid, List, TrendingUp, Award, Video, FileText } from 'lucide-react';
+import { BookOpen, Search, Filter, Clock, Users, Star, ChevronDown, Grid, List, TrendingUp, Award, Video, FileText, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
+import Profile from './profile';
 
 export default function Courses() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -9,6 +11,40 @@ export default function Courses() {
   const [sortBy, setSortBy] = useState('popular');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [enrollModal, setEnrollModal] = useState({ isOpen: false, course: null });
+  const [enrolledCourses, setEnrolledCourses] = useState(() => {
+    const saved = localStorage.getItem('enrolledCourses');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  const handleEnrollClick = (course) => {
+    setEnrollModal({ isOpen: true, course });
+  };
+
+  const handleEnrollConfirm = () => {
+    if (enrollModal.course) {
+      const newEnrolledCourses = new Set([...enrolledCourses, enrollModal.course.id]);
+      setEnrolledCourses(newEnrolledCourses);
+
+      localStorage.setItem('enrolledCourses', JSON.stringify([...newEnrolledCourses]));
+
+      if (enrollModal.course.id === 2) {
+        window.location.href = '/course/dsa';
+      }
+    }
+    setEnrollModal({ isOpen: false, course: null });
+  };
+
+  const handleOpenCourse = (course) => {
+    if (course.id === 2) {
+      window.location.href = '/course/dsa';
+    }
+  };
+
+  const handleEnrollCancel = () => {
+    setEnrollModal({ isOpen: false, course: null });
+  };
 
   const categories = [
     { id: 'all', name: 'All Courses', count: 50 },
@@ -38,9 +74,9 @@ export default function Courses() {
     },
     {
       id: 2,
-      title: "Data Science & Machine Learning Masterclass",
+      title: "Data Structure and Algorithms",
       instructor: "Prof. Michael Chen",
-      category: "Data Science",
+      category: "Data Structures and Algorithms",
       duration: "16 weeks",
       enrolled: 987,
       rating: 4.9,
@@ -48,7 +84,7 @@ export default function Courses() {
       price: "Free",
       level: "Intermediate",
       image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
-      description: "Learn Python, pandas, scikit-learn, and TensorFlow. Complete hands-on ML projects.",
+      description: "Learn essential data structures and algorithms. Optimize code and solve complex problems.",
       lessons: 60,
       hours: 48
     },
@@ -120,57 +156,46 @@ export default function Courses() {
 
   const filteredCourses = courses.filter(course => {
     const matchesCategory = selectedCategory === 'all' || course.category === categories.find(c => c.id === selectedCategory)?.name;
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-            <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-14">
-                <Link to="/" className="flex items-center space-x-2">
-                    <div className="bg-blue-600 p-1.5 rounded-md">
-                        <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
-                        EduEnroll
-                    </span>
-                </Link>
+          <div className="flex justify-between items-center h-14">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="bg-blue-600 p-1.5 rounded-md">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
+                EduEnroll
+              </span>
+            </Link>
 
-                <div className="hidden md:flex items-center space-x-6">
-                    <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-                    <Link to="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
-                    <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
-                    <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
-                        Sign Up
-                    </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
+              <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
+              <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
+              {isAuthenticated ? (
+                <Profile user={user} />
+              ) : isLoading ? (
+                <div className="w-8 h-8 animate-spin border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              ) : (
+                <div className="flex items-center space-x-3">
+
+                  <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
+                    Sign Up
+                  </Link>
                 </div>
-
-          {/* Mobile Menu Button */}
-          {/* <div className="md:hidden">
-              <button 
-                className="p-1"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-          </div> */}
-
-          {/* Mobile Menu */}
-          {/* {mobileMenuOpen && (
-            <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
-              <a href="#courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</a>
-              <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
-              <a href="#about" className="block text-sm text-gray-700 hover:text-blue-600">About</a>
-              <button className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm">
-                Sign Up
-              </button>
+              )}
             </div>
-          )} */}
-            </div>
+
+
+          </div>
         </div>
       </nav>
 
@@ -207,20 +232,7 @@ export default function Courses() {
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
 
-            {/* Sort By */}
-            {/* <div className="md:col-span-2 relative">
-              <select
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-                <option value="newest">Newest</option>
-                <option value="duration">Duration</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div> */}
+
 
             {/* View Toggle */}
             <div className="md:col-span-2 flex items-centern ml-28 w-30 space-x-2">
@@ -280,21 +292,16 @@ export default function Courses() {
                     {course.level}
                   </div>
                 </div>
-                
+
                 <div className="p-4">
                   <div className="text-xs text-blue-600 font-semibold mb-1">{course.category}</div>
                   <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">{course.title}</h3>
                   <p className="text-gray-600 text-xs mb-3 line-clamp-2">{course.description}</p>
-                  
+
                   <div className="flex items-center justify-between mb-3 text-xs text-gray-500">
                     <div className="flex items-center">
-                      {/* <Video className="w-3 h-3 mr-1" /> */}
                       {course.lessons} Questions
                     </div>
-                    {/* <div className="flex items-center">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {course.hours}h
-                    </div> */}
                   </div>
 
                   <div className="flex items-center justify-between mb-3 pb-3 border-b">
@@ -310,12 +317,21 @@ export default function Courses() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {/* <div className="text-xs text-gray-600">
-                      by <span className="font-semibold text-gray-900">{course.instructor}</span>
-                    </div> */}
-                    <button className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition">
-                      Enroll
-                    </button>
+                    {enrolledCourses.has(course.id) ? (
+                      <button
+                        onClick={() => handleOpenCourse(course)}
+                        className="bg-green-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition"
+                      >
+                        Open
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleEnrollClick(course)}
+                        className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition"
+                      >
+                        Enroll
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -338,7 +354,7 @@ export default function Courses() {
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 mb-1">{course.title}</h3>
                         <p className="text-gray-600 text-sm mb-3">{course.description}</p>
-                        
+
                         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mb-3">
                           <div className="flex items-center">
                             <Clock className="w-3 h-3 mr-1" />
@@ -369,12 +385,24 @@ export default function Courses() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="ml-3 text-right">
                         <div className="text-lg font-bold text-gray-900 mb-2">{course.price}</div>
-                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:shadow-md transition">
-                          Enroll Now
-                        </button>
+                        {enrolledCourses.has(course.id) ? (
+                          <button
+                            onClick={() => handleOpenCourse(course)}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:shadow-md transition"
+                          >
+                            Open Course
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEnrollClick(course)}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:shadow-md transition"
+                          >
+                            Enroll Now
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -390,7 +418,7 @@ export default function Courses() {
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-900 mb-2">No courses found</h3>
             <p className="text-gray-600 mb-6">Try adjusting your filters or search query</p>
-            <button 
+            <button
               onClick={() => {
                 setSelectedCategory('all');
                 setSearchQuery('');
@@ -402,6 +430,49 @@ export default function Courses() {
           </div>
         )}
       </div>
+
+      {/* Enrollment Modal */}
+      {enrollModal.isOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="p-4 text-center">
+              <div className="mb-4">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Enroll in Course?</h3>
+                <p className="text-gray-600 text-sm">
+                  Do you want to enroll in <br />
+                  <span className="font-medium text-gray-900">"{enrollModal.course?.title}"</span>?
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleEnrollCancel}
+                  className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
+                >
+                  No
+                </button>
+                <button
+                  onClick={handleEnrollConfirm}
+                  className="flex-1 px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

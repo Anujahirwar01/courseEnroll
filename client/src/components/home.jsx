@@ -88,7 +88,7 @@ export default function Home() {
 
             <div className="hidden md:flex items-center space-x-6">
               <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-              <a href="#features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</a>
+              <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
               <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
 
               {isAuthenticated ? (
@@ -288,9 +288,9 @@ export default function Home() {
             <Link to='/signup' className="bg-white text-blue-600 px-8 py-3 rounded-lg text-base font-semibold hover:shadow-lg transition transform hover:-translate-y-0.5">
               Sign Up Now
             </Link>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-lg text-base font-semibold hover:bg-white hover:text-blue-600 transition">
+            <Link to="/courses" className="border-2 border-white text-white px-8 py-3 rounded-lg text-base font-semibold hover:bg-white hover:text-blue-600 transition">
               Browse Courses
-            </button>
+            </Link>
           </div>
         </div>
       </section>
