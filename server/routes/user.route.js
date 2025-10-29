@@ -16,7 +16,11 @@ router.post('/login', [
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 ], userController.login)
 
+// Auth route - returns user data for authentication persistence
 router.get('/profile', authMiddleware, userController.getProfile)
+
+// Profile data route - returns profile document for profile page
+router.get('/profile-data', authMiddleware, userController.getProfileData)
 
 router.post('/profile', authMiddleware, [
   body('name').notEmpty().withMessage('Name is required')

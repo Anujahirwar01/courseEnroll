@@ -12,21 +12,14 @@ export const register = async (req, res) => {
 
     try {
         const { name, email, password } = req.body;
-
-        // Check if user already exists
         const alreadyUser = await User.findOne({ email });
         if (alreadyUser) {
             return res.status(400).json({ message: "User already exists" });
         }
-
-        // Create new user
         const user = await userService.createUser({ name, email, password });
         const token = user.generateToken();
-
-        // Remove password from response
         const userResponse = { ...user._doc };
         delete userResponse.password;
-
         res.status(201).json({
             message: "User created successfully",
             user: userResponse,
@@ -67,7 +60,7 @@ export const login = async (req, res) => {
     }
 }
 
-// GET /api/users/profile - Get user profile
+// GET /api/users/profile - Get user profile (for authentication)
 export const getProfile = async (req, res) => {
     try {
         const user = req.user;
@@ -75,16 +68,34 @@ export const getProfile = async (req, res) => {
             return res.status(401).json({ message: "User Not Found" });
         }
 
-        // Find profile by userId
-        const profile = await Profile.findOne({ userId: user._id });
+        // For authentication purposes, return user data
+        // Remove password from response
+        const userResponse = { ...user._doc };
+        delete userResponse.password;
 
+        res.status(200).json({
+            message: "User profile retrieved successfully",
+            user: userResponse,
+            success: true
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getProfileData = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({ message: "User Not Found" });
+        }
+        const profile = await Profile.findOne({ userId: user._id });
         if (!profile) {
             return res.status(404).json({
                 message: "Profile not found",
                 profileExists: false
             });
         }
-
         res.status(200).json({
             message: "Profile retrieved successfully",
             profile: profile,
@@ -94,8 +105,6 @@ export const getProfile = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
-
-// POST /api/users/profile - Create new profile
 export const createProfile = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -113,10 +122,7 @@ export const createProfile = async (req, res) => {
         if (existingProfile) {
             return res.status(400).json({ message: "Profile already exists" });
         }
-
         const { name, phone, location, bio, avatar } = req.body;
-
-        // Create new profile
         const newProfile = new Profile({
             userId: user._id,
             name: name || user.name,
