@@ -6,7 +6,7 @@ import Courses from "../components/courses";
 import About from "../components/about";
 import ProfileInside from "../components/profileinside";
 import Features from "../components/features";
-import DSACourse from "../components/dsacourse";
+import DSACourse from "../data/dsacourse";
 
 const AppRoutes = () => {
     return (

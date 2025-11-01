@@ -317,7 +317,7 @@ export default function Courses() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {enrolledCourses.has(course.id) ? (
+                    {enrolledCourses.has(course.id) && isAuthenticated ? (
                       <button
                         onClick={() => handleOpenCourse(course)}
                         className="bg-green-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition"
@@ -329,7 +329,7 @@ export default function Courses() {
                         onClick={() => handleEnrollClick(course)}
                         className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:shadow-md transition"
                       >
-                        Enroll
+                        {!isAuthenticated ? 'Login to Enroll' : 'Enroll'}
                       </button>
                     )}
                   </div>
@@ -388,7 +388,7 @@ export default function Courses() {
 
                       <div className="ml-3 text-right">
                         <div className="text-lg font-bold text-gray-900 mb-2">{course.price}</div>
-                        {enrolledCourses.has(course.id) ? (
+                        {enrolledCourses.has(course.id) && isAuthenticated ? (
                           <button
                             onClick={() => handleOpenCourse(course)}
                             className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:shadow-md transition"
@@ -400,7 +400,7 @@ export default function Courses() {
                             onClick={() => handleEnrollClick(course)}
                             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:shadow-md transition"
                           >
-                            Enroll Now
+                            {isAuthenticated ? "Enroll Now" : "Login to Enroll"}
                           </button>
                         )}
                       </div>

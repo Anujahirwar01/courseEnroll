@@ -33,7 +33,7 @@ const ProfileInside = () => {
     const [errors, setErrors] = useState({});
     const [successMessage, setSuccessMessage] = useState('');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const {isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
@@ -52,32 +52,7 @@ const ProfileInside = () => {
         currentStreak: 12
     });
 
-    const [enrolledCourses] = useState([
-        {
-            id: 1,
-            title: 'Full Stack Web Development',
-            progress: 75,
-            instructor: 'Dr. Sarah Johnson',
-            duration: '12 weeks',
-            status: 'In Progress'
-        },
-        {
-            id: 2,
-            title: 'React Advanced Concepts',
-            progress: 100,
-            instructor: 'Prof. Michael Chen',
-            duration: '8 weeks',
-            status: 'Completed'
-        },
-        {
-            id: 3,
-            title: 'Node.js & Express Mastery',
-            progress: 45,
-            instructor: 'Emily Rodriguez',
-            duration: '10 weeks',
-            status: 'In Progress'
-        }
-    ]);
+    const [enrolledCourses, setEnrolledCourses] = useState(new Set());
 
     const [achievements] = useState([
         {
@@ -105,6 +80,30 @@ const ProfileInside = () => {
 
     // API Base URL
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+    // Available courses data
+    const availableCourses = [
+        { id: 1, title: 'Data Structures and Algorithms' },
+        { id: 2, title: 'Full Stack Web Development' },
+        { id: 3, title: 'React Advanced Concepts' },
+        { id: 4, title: 'Node.js & Express Mastery' },
+        { id: 5, title: 'Python for Beginners' },
+        { id: 6, title: 'Machine Learning Fundamentals' }
+    ];
+
+    // Load enrolled courses from localStorage
+    useEffect(() => {
+        const storedEnrollments = localStorage.getItem('enrolledCourses');
+        if (storedEnrollments) {
+            try {
+                const enrollmentIds = JSON.parse(storedEnrollments);
+                setEnrolledCourses(new Set(enrollmentIds));
+            } catch (error) {
+                console.error('Error parsing enrolled courses:', error);
+                setEnrolledCourses(new Set());
+            }
+        }
+    }, []);
 
     // Load profile data on component mount
     useEffect(() => {
@@ -283,73 +282,73 @@ const ProfileInside = () => {
     return (
         <div className="min-h-screen bg-gray-50 ">
             <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-blue-600 p-1.5 rounded-md">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
-                EduEnroll
-              </span>
-            </Link>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-14">
+                        <Link to="/" className="flex items-center space-x-2">
+                            <div className="bg-blue-600 p-1.5 rounded-md">
+                                <BookOpen className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-lg font-bold bg-blue-600 bg-clip-text text-transparent">
+                                EduEnroll
+                            </span>
+                        </Link>
 
-            <div className="hidden md:flex items-center space-x-6">
-              <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
-              <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
-              <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
+                        <div className="hidden md:flex items-center space-x-6">
+                            <Link to="/courses" className="text-sm text-gray-700 hover:text-blue-600 transition">Courses</Link>
+                            <Link to="/features" className="text-sm text-gray-700 hover:text-blue-600 transition">Features</Link>
+                            <Link to="/about" className="text-sm text-gray-700 hover:text-blue-600 transition">About</Link>
 
-              {isAuthenticated ? (
-                <Profile user={user} />
-              ) : isLoading ? (
-                <div className="w-8 h-8 animate-spin border-2 border-blue-600 border-t-transparent rounded-full"></div>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  
-                  <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
-                    Sign Up
-                  </Link>
+                            {isAuthenticated ? (
+                                <Profile user={user} />
+                            ) : isLoading ? (
+                                <div className="w-8 h-8 animate-spin border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            ) : (
+                                <div className="flex items-center space-x-3">
+
+                                    <Link to="/signup" className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:shadow-md transition">
+                                        Sign Up
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Mobile Menu Button */}
+                        <div className="md:hidden">
+                            <button
+                                className="p-1"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            >
+                                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
+                        </div>
+
+                        {/* Mobile Menu */}
+                        {mobileMenuOpen && (
+                            <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
+                                <Link to="/courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</Link>
+                                <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
+                                <Link to="/about" className="block text-sm text-gray-700 hover:text-blue-600">About</Link>
+
+                                {isAuthenticated ? (
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-gray-900 font-medium">Welcome, {user?.name}</p>
+                                        <Link to="/profile" className="block text-sm text-gray-700 hover:text-blue-600">My Profile</Link>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Link to="/login" className="block w-full bg-gray-100 text-gray-700 px-4 py-1.5 rounded-md text-sm text-center">
+                                            Login
+                                        </Link>
+                                        <Link to="/signup" className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm text-center">
+                                            Sign Up
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
-              )}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button
-                className="p-1"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-              <div className="md:hidden py-3 space-y-3 border-t border-gray-100">
-                <Link to="/courses" className="block text-sm text-gray-700 hover:text-blue-600">Courses</Link>
-                <a href="#features" className="block text-sm text-gray-700 hover:text-blue-600">Features</a>
-                <Link to="/about" className="block text-sm text-gray-700 hover:text-blue-600">About</Link>
-
-                {isAuthenticated ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-900 font-medium">Welcome, {user?.name}</p>
-                    <Link to="/profile" className="block text-sm text-gray-700 hover:text-blue-600">My Profile</Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Link to="/login" className="block w-full bg-gray-100 text-gray-700 px-4 py-1.5 rounded-md text-sm text-center">
-                      Login
-                    </Link>
-                    <Link to="/signup" className="block w-full bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm text-center">
-                      Sign Up
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+            </nav>
             <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
 
                 {/* Success Message */}
@@ -525,7 +524,7 @@ const ProfileInside = () => {
 
                 <div className="grid lg:grid-cols-3 gap-3">
 
-                    {/* Enrolled Courses */}
+                    {/* /* Enrolled Courses */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded shadow-sm p-3">
                             <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center">
@@ -533,31 +532,34 @@ const ProfileInside = () => {
                                 My Courses
                             </h2>
                             <div className="space-y-2">
-                                {enrolledCourses.map((course) => (
-                                    <div key={course.id} className="border border-gray-200 rounded p-2 hover:shadow-sm transition">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className="font-semibold text-gray-900 text-xs">{course.title}</h3>
-                                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${course.status === 'Completed'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-blue-100 text-blue-800'
-                                                }`}>
-                                                {course.status}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-gray-600 mb-1">
-                                            {course.instructor} • {course.duration}
-                                        </p>
-                                        <div className="flex items-center space-x-1.5">
-                                            <div className="flex-1 bg-gray-200 rounded-full h-1">
-                                                <div
-                                                    className={`h-1 rounded-full ${getProgressColor(course.progress)}`}
-                                                    style={{ width: `${course.progress}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-700">{course.progress}%</span>
-                                        </div>
+                                {enrolledCourses.size === 0 ? (
+                                    <div className="text-center py-8">
+                                        <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                        <p className="text-gray-500 text-sm">No courses enrolled yet</p>
+                                        <Link
+                                            to="/courses"
+                                            className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+                                        >
+                                            Browse Courses
+                                        </Link>
                                     </div>
-                                ))}
+                                ) : (
+                                    availableCourses
+                                        .filter(course => enrolledCourses.has(course.id))
+                                        .map((course) => (
+                                            <div key={course.id} className="border border-gray-200 rounded p-3 hover:shadow-sm transition">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="bg-blue-100 p-2 rounded-full">
+                                                        <BookOpen className="w-4 h-4 text-blue-600" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold text-gray-900 text-sm">{course.title}</h3>
+                                                        <p className="text-xs text-gray-500 mt-1">Enrolled Course</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                )}
                             </div>
                         </div>
                     </div>

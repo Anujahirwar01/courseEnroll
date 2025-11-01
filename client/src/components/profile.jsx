@@ -43,7 +43,7 @@ const Profile = ({ user }) => {
                         My Profile
                     </Link>
 
-                    <Link
+                    {/* <Link
                         to="/my-courses"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsOpen(false)}
@@ -59,7 +59,7 @@ const Profile = ({ user }) => {
                     >
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
-                    </Link>
+                    </Link> */}
 
                     <div className="border-t border-gray-100">
                         <button

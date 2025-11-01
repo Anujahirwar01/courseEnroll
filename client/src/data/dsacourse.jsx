@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BookOpen,
     CheckCircle,
@@ -13,15 +13,33 @@ import {
     PlayCircle,
     Trophy,
     Target,
-    BarChart
+    BarChart,
+    Lock,
+    UserCheck
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
 
 const DSACourse = () => {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDifficulty, setSelectedDifficulty] = useState('all');
     const [selectedTopic, setSelectedTopic] = useState('all');
     const [completedProblems, setCompletedProblems] = useState(new Set());
+
+    // Authentication check
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            // Redirect to login page if not authenticated
+            navigate('/login', {
+                state: {
+                    message: 'Please login to access DSA Course',
+                    returnTo: '/course/dsa'
+                }
+            });
+        }
+    }, [isAuthenticated, isLoading, navigate]);
 
     const topics = [
         'Arrays', 'Strings', 'Linked Lists', 'Stacks & Queues', 'Trees',
@@ -183,23 +201,83 @@ const DSACourse = () => {
         hard: dsaProblems.filter(p => p.difficulty === 'Hard').length
     };
 
+    // Show loading state while checking authentication
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/50 text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <BookOpen className="w-8 h-8 text-blue-600 animate-pulse" />
+                    </div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Loading DSA Course...</h3>
+                    <p className="text-gray-600 text-sm">Please wait while we verify your access</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show access denied if not authenticated (fallback)
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/50 text-center max-w-md mx-auto">
+                    <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <Lock className="w-10 h-10 text-red-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Access Restricted</h3>
+                    <p className="text-gray-600 mb-6">
+                        You need to be logged in to access the DSA Course. Please create an account or login to continue learning.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                        <Link
+                            to="/login"
+                            state={{ returnTo: '/course/dsa', message: 'Login to access DSA Course' }}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                        >
+                            Login
+                        </Link>
+                        <Link
+                            to="/signup"
+                            state={{ returnTo: '/course/dsa' }}
+                            className="bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 hover:shadow-md transition-all duration-300"
+                        >
+                            Sign Up
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+            <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 sticky top-0 z-50">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-4">
                             <Link
                                 to="/courses"
-                                className="flex items-center text-gray-600 hover:text-blue-600 transition text-sm"
+                                className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-300 group"
                             >
-                                <ArrowLeft className="w-4 h-4 mr-1" />
-                                Back to Courses
+                                <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors duration-300">
+                                    <ArrowLeft className="w-4 h-4" />
+                                </div>
+                                <span className="ml-2 font-medium">Back to Courses</span>
                             </Link>
                         </div>
-                        <div className="flex items-center space-x-3">
-                            <Link to="/profile" className="text-gray-600 hover:text-blue-600 transition text-sm">
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                                <UserCheck className="w-4 h-4 text-green-600" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    Welcome, {user?.name || 'User'}!
+                                </span>
+                            </div>
+                            <Link
+                                to="/profileinside"
+                                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                            >
                                 Profile
                             </Link>
                         </div>
@@ -207,80 +285,114 @@ const DSACourse = () => {
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+            <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
                 {/* Course Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 text-white mb-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold mb-1">Data Structures & Algorithms</h1>
-                            <p className="text-blue-100 mb-2 text-sm">Master DSA with 100 curated LeetCode problems</p>
-                            <div className="flex items-center space-x-3 text-xs">
-                                <div className="flex items-center">
-                                    <BookOpen className="w-3 h-3 mr-1" />
-                                    100 Problems
+                <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-lg p-4 text-white mb-4 shadow-lg">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="absolute -top-2 -right-2 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
+                    <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-white/5 rounded-full blur-lg"></div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                    <div className="p-1.5 bg-white/20 rounded-lg mr-3">
+                                        <BookOpen className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-lg font-bold mb-1">Data Structures & Algorithms</h1>
+                                        <p className="text-blue-100 text-sm">Master DSA with 100 curated LeetCode problems</p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center">
-                                    <Clock className="w-3 h-3 mr-1" />
-                                    Self-paced
-                                </div>
-                                <div className="flex items-center">
-                                    <TrendingUp className="w-3 h-3 mr-1" />
-                                    Beginner to Advanced
+
+                                <div className="flex flex-wrap gap-2">
+                                    <div className="flex items-center bg-white/20 rounded-full px-2 py-1">
+                                        <BookOpen className="w-3 h-3 mr-1" />
+                                        <span className="font-medium text-xs">100 Problems</span>
+                                    </div>
+                                    <div className="flex items-center bg-white/20 rounded-full px-2 py-1">
+                                        <Clock className="w-3 h-3 mr-1" />
+                                        <span className="font-medium text-xs">Self-paced</span>
+                                    </div>
+                                    <div className="flex items-center bg-white/20 rounded-full px-2 py-1">
+                                        <TrendingUp className="w-3 h-3 mr-1" />
+                                        <span className="font-medium text-xs">Beginner to Advanced</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* <div className="hidden md:block text-right">
+                                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
+                                    <div className="text-xl font-bold mb-1">{stats.completed}<span className="text-sm">/{stats.total}</span></div>
+                                    <div className="text-blue-100 font-medium text-xs">Problems Solved</div>
+                                    <div className="w-16 bg-white/30 rounded-full h-1 mt-2">
+                                        <div
+                                            className="bg-white rounded-full h-1 transition-all duration-500"
+                                            style={{ width: `${(stats.completed / stats.total) * 100}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div> */}
                         </div>
-                        {/* <div className="text-right">
-                            <div className="text-2xl font-bold">{stats.completed}/{stats.total}</div>
-                            <div className="text-blue-100">Problems Solved</div>
-                        </div> */}
                     </div>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                    {/* <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                        <Trophy className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-gray-900">{stats.completed}</div>
-                        <div className="text-sm text-gray-600">Solved</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                        <Target className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-                        <div className="text-sm text-gray-600">Total</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    {/* <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-white/50">
+                        <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <Trophy className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.completed}</div>
+                        <div className="text-xs font-medium text-gray-600">Solved</div>
                     </div> */}
-                    {/* <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                        <div className="w-6 h-6 bg-green-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-white/50">
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white/90 rounded flex items-center justify-center">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            </div>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">{stats.easy}</div>
-                        <div className="text-sm text-gray-600">Easy</div>
+                        <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.easy}</div>
+                        <div className="text-xs font-medium text-gray-600">Easy</div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                        <div className="w-6 h-6 bg-yellow-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-white/50">
+                        <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white/90 rounded flex items-center justify-center">
+                                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            </div>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">{stats.medium}</div>
-                        <div className="text-sm text-gray-600">Medium</div>
+                        <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.medium}</div>
+                        <div className="text-xs font-medium text-gray-600">Medium</div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                        <div className="w-6 h-6 bg-red-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-white/50">
+                        <div className="w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white/90 rounded flex items-center justify-center">
+                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            </div>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">{stats.hard}</div>
-                        <div className="text-sm text-gray-600">Hard</div>
-                    </div> */}
+                        <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.hard}</div>
+                        <div className="text-xs font-medium text-gray-600">Hard</div>
+                    </div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
-                    <div className="grid md:grid-cols-4 gap-3">
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm p-3 mb-4 border border-white/50">
+                    <div className="flex items-center mb-2">
+                        <Filter className="w-3 h-3 text-gray-600 mr-1" />
+                        <h3 className="text-sm font-semibold text-gray-800">Filter Problems</h3>
+                    </div>
+
+                    <div className="grid md:grid-cols-4 gap-2">
                         {/* Search */}
-                        <div className="relative">
-                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+                        <div className="relative group">
+                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 group-focus-within:text-blue-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search problems..."
-                                className="w-full pl-7 pr-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-7 pr-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-300"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -288,19 +400,19 @@ const DSACourse = () => {
 
                         {/* Difficulty Filter */}
                         <select
-                            className="px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-300 cursor-pointer"
                             value={selectedDifficulty}
                             onChange={(e) => setSelectedDifficulty(e.target.value)}
                         >
                             <option value="all">All Difficulties</option>
-                            <option value="Easy">Easy</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Hard">Hard</option>
+                            <option value="Easy">🟢 Easy</option>
+                            <option value="Medium">🟡 Medium</option>
+                            <option value="Hard">🔴 Hard</option>
                         </select>
 
                         {/* Topic Filter */}
                         <select
-                            className="px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-300 cursor-pointer"
                             value={selectedTopic}
                             onChange={(e) => setSelectedTopic(e.target.value)}
                         >
@@ -310,10 +422,10 @@ const DSACourse = () => {
                             ))}
                         </select>
 
-                        {/* Progress */}
-                        {/* <div className="flex items-center justify-center bg-blue-50 rounded-md px-3 py-2">
-                            <BarChart className="w-4 h-4 text-blue-600 mr-2" />
-                            <span className="text-sm font-medium text-blue-900">
+                        {/* Progress Display */}
+                        {/* <div className="flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg px-2 py-2 border border-blue-100">
+                            <BarChart className="w-3 h-3 text-blue-600 mr-1" />
+                            <span className="text-xs font-semibold text-blue-800">
                                 {Math.round((stats.completed / stats.total) * 100)}% Complete
                             </span>
                         </div> */}
@@ -321,45 +433,59 @@ const DSACourse = () => {
                 </div>
 
                 {/* Problems List */}
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                        <h2 className="text-base font-semibold text-gray-900">
-                            Problems ({filteredProblems.length})
-                        </h2>
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden border border-white/50">
+                    <div className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-sm font-bold text-gray-800 flex items-center">
+                                <BookOpen className="w-3 h-3 mr-1 text-blue-600" />
+                                Problems ({filteredProblems.length})
+                            </h2>
+                            <div className="text-xs text-gray-600">
+                                Click ✓ to mark as solved
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-gray-100">
                         {filteredProblems.map((problem, index) => (
-                            <div key={problem.id} className="px-4 py-2 hover:bg-gray-50 transition">
-                                <div cla nnnnssName="flex items-center justify-between">
+                            <div key={problem.id} className="px-3 py-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 group">
+                                <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2 flex-1">
                                         <button
                                             onClick={() => toggleProblemCompletion(problem.id)}
-                                            className="flex-shrink-0 transition"
+                                            className="shrink-0 transition-all duration-300 hover:scale-110"
                                         >
                                             {completedProblems.has(problem.id) ? (
-                                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                                <div className="relative">
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                    <div className="absolute inset-0 rounded-full bg-green-100 opacity-20 animate-ping"></div>
+                                                </div>
                                             ) : (
-                                                <Circle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                                                <Circle className="w-4 h-4 text-gray-400 hover:text-blue-500 transition-colors" />
                                             )}
                                         </button>
 
-                                        <div className="text-xs text-gray-600 w-6">
-                                            #{problem.id}
+                                        <div className="flex items-center space-x-1 bg-gray-100 rounded-full px-2 py-0.5">
+                                            <span className="text-xs font-bold text-gray-700">#{problem.id}</span>
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-sm font-medium text-gray-900 truncate">
+                                            <h3 className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors">
                                                 {problem.title}
                                             </h3>
-                                            <p className="text-xs text-gray-600 mt-0.5">
+                                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
                                                 {problem.description}
                                             </p>
                                             <div className="flex items-center space-x-2 mt-1">
-                                                <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${getDifficultyColor(problem.difficulty)}`}>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getDifficultyColor(problem.difficulty)} shadow-sm`}>
+                                                    {problem.difficulty === 'Easy' && '🟢'}
+                                                    {problem.difficulty === 'Medium' && '🟡'}
+                                                    {problem.difficulty === 'Hard' && '🔴'}
                                                     {problem.difficulty}
                                                 </span>
-                                                <span className="text-xs text-gray-500">{problem.topic}</span>
+                                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                                                    {problem.topic}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -368,7 +494,7 @@ const DSACourse = () => {
                                         href={problem.leetcodeUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="ml-2 flex items-center space-x-1 bg-orange-500 text-white px-2 py-1 rounded text-xs font-medium hover:bg-orange-600 transition"
+                                        className="ml-2 flex items-center space-x-1 bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-lg font-medium hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300 group-hover:shadow-lg text-xs"
                                     >
                                         <ExternalLink className="w-3 h-3" />
                                         <span>LeetCode</span>
@@ -382,18 +508,22 @@ const DSACourse = () => {
                 {/* Empty State */}
                 {filteredProblems.length === 0 && (
                     <div className="text-center py-8">
-                        <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">No problems found</h3>
-                        <p className="text-gray-600 mb-3 text-sm">Try adjusting your filters</p>
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <BookOpen className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">No problems found</h3>
+                        <p className="text-gray-600 mb-4 text-sm max-w-sm mx-auto">
+                            We couldn't find any problems matching your current filters. Try adjusting your search criteria.
+                        </p>
                         <button
                             onClick={() => {
                                 setSearchQuery('');
                                 setSelectedDifficulty('all');
                                 setSelectedTopic('all');
                             }}
-                            className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700 transition"
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300 text-sm"
                         >
-                            Clear Filters
+                            Clear All Filters
                         </button>
                     </div>
                 )}
