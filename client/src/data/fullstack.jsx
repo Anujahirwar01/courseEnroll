@@ -27,9 +27,9 @@ import { useAuth } from '../context/authcontext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const MERNStackCourse = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true);
+    const [courseLoading, setCourseLoading] = useState(true);
     const [completedTopics, setCompletedTopics] = useState(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedModule, setSelectedModule] = useState('all');
@@ -396,18 +396,21 @@ const MERNStackCourse = () => {
 
     // Check authentication and redirect if needed
     useEffect(() => {
+        // wait for auth context to finish loading
+        if (authLoading) return;
+
         if (!isAuthenticated) {
             navigate('/login', {
                 state: {
                     message: 'Please login to access the MERN Stack course',
-                    redirectTo: '/fullstack-course'
+                    returnTo: '/course/fullstack'
                 }
             });
             return;
         }
 
-        setIsLoading(false);
-    }, [isAuthenticated, navigate]);
+        setCourseLoading(false);
+    }, [authLoading, isAuthenticated, navigate]);
 
     // Load completed topics from localStorage
     useEffect(() => {
@@ -490,7 +493,7 @@ const MERNStackCourse = () => {
     };
 
     // Loading screen
-    if (isLoading) {
+    if (courseLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
                 <div className="text-center">
@@ -514,6 +517,7 @@ const MERNStackCourse = () => {
                     <div className="space-y-3">
                         <Link
                             to="/login"
+                            state={{ returnTo: '/course/fullstack', message: 'Login to access MERN Course' }}
                             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium block"
                         >
                             Login to Continue
@@ -628,8 +632,8 @@ const MERNStackCourse = () => {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                                            ? 'border-blue-600 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        ? 'border-blue-600 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     {tab.icon}

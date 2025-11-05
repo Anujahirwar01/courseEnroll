@@ -21,11 +21,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/authcontext';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Profile from './profile';
 
 const ProfileInside = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [profileExists, setProfileExists] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -81,14 +82,74 @@ const ProfileInside = () => {
     // API Base URL
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
-    // Available courses data
+    // Available courses data (matching the structure from courses.jsx)
     const availableCourses = [
-        { id: 1, title: 'Data Structures and Algorithms' },
-        { id: 2, title: 'Full Stack Web Development' },
-        { id: 3, title: 'React Advanced Concepts' },
-        { id: 4, title: 'Node.js & Express Mastery' },
-        { id: 5, title: 'Python for Beginners' },
-        { id: 6, title: 'Machine Learning Fundamentals' }
+        {
+            id: 1,
+            title: "Full Stack Web Development Bootcamp",
+            instructor: "Dr. Sarah Johnson",
+            category: "Web Development",
+            duration: "12 weeks",
+            level: "Beginner",
+            image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+            description: "Master full stack development with React, Node.js, Express, and MongoDB. Build real-world projects.",
+            lessons: 45
+        },
+        {
+            id: 2,
+            title: "Data Structure and Algorithms",
+            instructor: "Prof. Michael Chen",
+            category: "Data Structures and Algorithms",
+            duration: "16 weeks",
+            level: "Intermediate",
+            image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
+            description: "Learn essential data structures and algorithms. Optimize code and solve complex problems.",
+            lessons: 60
+        },
+        {
+            id: 3,
+            title: "React Native Mobile App Development",
+            instructor: "Emily Rodriguez",
+            category: "Mobile Development",
+            duration: "10 weeks",
+            level: "Intermediate",
+            image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
+            description: "Build cross-platform mobile apps with React Native. Deploy to iOS and Android.",
+            lessons: 38
+        },
+        {
+            id: 4,
+            title: "UI/UX Design Fundamentals",
+            instructor: "Alex Thompson",
+            category: "UI/UX Design",
+            duration: "8 weeks",
+            level: "Beginner",
+            image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
+            description: "Master design principles, Figma, prototyping, and user research methodologies.",
+            lessons: 30
+        },
+        {
+            id: 5,
+            title: "Python for Data Analysis",
+            instructor: "Dr. James Wilson",
+            category: "Data Science",
+            duration: "6 weeks",
+            level: "Beginner",
+            image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=250&fit=crop",
+            description: "Learn Python programming for data analysis with pandas, NumPy, and matplotlib.",
+            lessons: 25
+        },
+        {
+            id: 6,
+            title: "Advanced JavaScript & TypeScript",
+            instructor: "Maria Garcia",
+            category: "Web Development",
+            duration: "14 weeks",
+            level: "Advanced",
+            image: "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=250&fit=crop",
+            description: "Deep dive into modern JavaScript, TypeScript, design patterns, and best practices.",
+            lessons: 52
+        }
     ];
 
     // Load enrolled courses from localStorage
@@ -97,7 +158,8 @@ const ProfileInside = () => {
         if (storedEnrollments) {
             try {
                 const enrollmentIds = JSON.parse(storedEnrollments);
-                setEnrolledCourses(new Set(enrollmentIds));
+                // Normalize IDs to numbers to match course data
+                setEnrolledCourses(new Set(enrollmentIds.map(id => Number(id))));
             } catch (error) {
                 console.error('Error parsing enrolled courses:', error);
                 setEnrolledCourses(new Set());
@@ -248,6 +310,17 @@ const ProfileInside = () => {
         // Reload original data
         if (profileExists) {
             loadProfile();
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/'); // Navigate to home page after logout
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Still navigate to home even if logout fails
+            navigate('/');
         }
     };
 
@@ -548,13 +621,39 @@ const ProfileInside = () => {
                                         .filter(course => enrolledCourses.has(course.id))
                                         .map((course) => (
                                             <div key={course.id} className="border border-gray-200 rounded p-3 hover:shadow-sm transition">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="bg-blue-100 p-2 rounded-full">
-                                                        <BookOpen className="w-4 h-4 text-blue-600" />
-                                                    </div>
+                                                <div className="flex items-start space-x-3">
+                                                    <img
+                                                        src={course.image}
+                                                        alt={course.title}
+                                                        className="w-12 h-12 rounded object-cover"
+                                                    />
                                                     <div className="flex-1">
                                                         <h3 className="font-semibold text-gray-900 text-sm">{course.title}</h3>
-                                                        <p className="text-xs text-gray-500 mt-1">Enrolled Course</p>
+                                                        <p className="text-xs text-gray-600 mt-1">{course.description}</p>
+                                                        <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500">
+                                                            <span className="flex items-center">
+                                                                <User className="w-3 h-3 mr-1" />
+                                                                {course.instructor}
+                                                            </span>
+                                                            <span className="flex items-center">
+                                                                <Clock className="w-3 h-3 mr-1" />
+                                                                {course.duration}
+                                                            </span>
+                                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                                                                {course.level}
+                                                            </span>
+                                                        </div>
+                                                        <div className="mt-2">
+                                                            <Link
+                                                                to={course.id === 1 ? '/course/fullstack' : course.id === 2 ? '/course/dsa' : course.id === 6 ? '/course/javascript' : '#'}
+                                                                className="inline-flex items-center text-blue-600 hover:text-blue-700 text-xs font-medium"
+                                                            >
+                                                                Continue Learning
+                                                                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -584,7 +683,7 @@ const ProfileInside = () => {
                                     Notification Preferences
                                 </button>
                                 <button
-                                    onClick={logout}
+                                    onClick={handleLogout}
                                     className="w-full text-left px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition"
                                 >
                                     Sign Out

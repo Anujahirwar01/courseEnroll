@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BookOpen, Search, Filter, Clock, Users, Star, ChevronDown, Grid, List, TrendingUp, Award, Video, FileText, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
@@ -14,9 +15,11 @@ export default function Courses() {
   const [enrollModal, setEnrollModal] = useState({ isOpen: false, course: null });
   const [enrolledCourses, setEnrolledCourses] = useState(() => {
     const saved = localStorage.getItem('enrolledCourses');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
+    // normalize stored IDs to numbers to ensure Set.has works reliably
+    return saved ? new Set(JSON.parse(saved).map((id) => Number(id))) : new Set();
   });
   const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleEnrollClick = (course) => {
     setEnrollModal({ isOpen: true, course });
@@ -24,21 +27,33 @@ export default function Courses() {
 
   const handleEnrollConfirm = () => {
     if (enrollModal.course) {
-      const newEnrolledCourses = new Set([...enrolledCourses, enrollModal.course.id]);
+      const courseId = Number(enrollModal.course.id);
+      const newEnrolledCourses = new Set([...enrolledCourses, courseId]);
       setEnrolledCourses(newEnrolledCourses);
 
+      // store normalized numeric IDs
       localStorage.setItem('enrolledCourses', JSON.stringify([...newEnrolledCourses]));
 
-      if (enrollModal.course.id === 2) {
-        window.location.href = '/course/dsa';
+      // navigate to the correct course page after enrollment
+      if (courseId === 2) {
+        navigate('/course/dsa');
+      } else if (courseId === 1) {
+        navigate('/course/fullstack');
+      } else if (courseId === 6) {
+        navigate('/course/javascript');
       }
     }
     setEnrollModal({ isOpen: false, course: null });
   };
 
   const handleOpenCourse = (course) => {
-    if (course.id === 2) {
-      window.location.href = '/course/dsa';
+    const courseId = Number(course.id);
+    if (courseId === 2) {
+      navigate('/course/dsa');
+    } else if (courseId === 1) {
+      navigate('/course/fullstack');
+    } else if (courseId === 6) {
+      navigate('/course/javascript');
     }
   };
 

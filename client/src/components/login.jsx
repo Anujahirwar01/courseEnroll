@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 
 const Login = () => {
@@ -12,6 +12,7 @@ const Login = () => {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleChange = (e) => {
         setFormData({
@@ -30,7 +31,9 @@ const Login = () => {
 
             if (result.success) {
                 console.log("Login successful:", result.user);
-                navigate('/'); // Redirect to home page
+                // Redirect to requested page (if any) or to /courses by default
+                const dest = location.state?.returnTo || '/courses';
+                navigate(dest);
             } else {
                 setError(result.error);
             }

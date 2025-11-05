@@ -7,6 +7,8 @@ import About from "../components/about";
 import ProfileInside from "../components/profileinside";
 import Features from "../components/features";
 import DSACourse from "../data/dsacourse";
+import MERNStackCourse from "../data/fullstack";
+import JavaScriptTypeScriptCourse from "../data/javascript";
 
 const AppRoutes = () => {
     return (
@@ -20,6 +22,9 @@ const AppRoutes = () => {
                 <Route path="/profile" element={<ProfileInside />} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/course/dsa" element={<DSACourse />} />
+                <Route path="/course/fullstack" element={<MERNStackCourse />} />
+                <Route path="/course/javascript" element={<JavaScriptTypeScriptCourse />} />
+
             </Routes>
         </BrowserRouter>
     )
