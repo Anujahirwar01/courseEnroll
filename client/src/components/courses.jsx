@@ -41,6 +41,8 @@ export default function Courses() {
         navigate('/course/fullstack');
       } else if (courseId === 6) {
         navigate('/course/javascript');
+      } else if (courseId === 4) {
+        navigate('/course/uiux');
       }
     }
     setEnrollModal({ isOpen: false, course: null });
@@ -54,6 +56,8 @@ export default function Courses() {
       navigate('/course/fullstack');
     } else if (courseId === 6) {
       navigate('/course/javascript');
+    } else if (courseId === 4) {
+      navigate('/course/uiux');
     }
   };
 
