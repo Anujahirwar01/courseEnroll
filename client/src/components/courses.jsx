@@ -43,6 +43,8 @@ export default function Courses() {
         navigate('/course/javascript');
       } else if (courseId === 4) {
         navigate('/course/uiux');
+      } else if (courseId === 3) {
+        navigate('/course/reactnative');
       }
     }
     setEnrollModal({ isOpen: false, course: null });
@@ -58,6 +60,8 @@ export default function Courses() {
       navigate('/course/javascript');
     } else if (courseId === 4) {
       navigate('/course/uiux');
+    } else if (courseId === 3) {
+      navigate('/course/reactnative');
     }
   };
 

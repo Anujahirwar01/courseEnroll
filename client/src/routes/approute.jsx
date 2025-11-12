@@ -10,6 +10,7 @@ import DSACourse from "../data/dsacourse";
 import MERNStackCourse from "../data/fullstack";
 import JavaScriptTypeScriptCourse from "../data/javascript";
 import UIUXCourse from "../data/uiux";
+import ReactNativeCourse from "../data/reactnative";
 
 const AppRoutes = () => {
     return (
@@ -26,6 +27,7 @@ const AppRoutes = () => {
                 <Route path="/course/fullstack" element={<MERNStackCourse />} />
                 <Route path="/course/javascript" element={<JavaScriptTypeScriptCourse />} />
                 <Route path="/course/uiux" element={<UIUXCourse />} />
+                <Route path="/course/reactnative" element={<ReactNativeCourse />} />
 
             </Routes>
         </BrowserRouter>
