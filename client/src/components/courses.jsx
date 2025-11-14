@@ -70,7 +70,7 @@ export default function Courses() {
   };
 
   const categories = [
-    { id: 'all', name: 'All Courses', count: 50 },
+    { id: 'all', name: 'All Course', count: 50 },
     { id: 'web', name: 'Web Development', count: 15 },
     { id: 'data', name: 'Data Science', count: 12 },
     { id: 'mobile', name: 'Mobile Development', count: 8 },
