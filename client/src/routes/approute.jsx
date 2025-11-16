@@ -11,6 +11,7 @@ import MERNStackCourse from "../data/fullstack";
 import JavaScriptTypeScriptCourse from "../data/javascript";
 import UIUXCourse from "../data/uiux";
 import ReactNativeCourse from "../data/reactnative";
+import PythonDataAnalyticsCourse from "../data/pythondataanalytics";
 
 const AppRoutes = () => {
     return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
                 <Route path="/course/javascript" element={<JavaScriptTypeScriptCourse />} />
                 <Route path="/course/uiux" element={<UIUXCourse />} />
                 <Route path="/course/reactnative" element={<ReactNativeCourse />} />
+                <Route path="/course/python-data-analytics" element={<PythonDataAnalyticsCourse />} />
 
             </Routes>
         </BrowserRouter>

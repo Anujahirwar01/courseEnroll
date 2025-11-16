@@ -45,6 +45,8 @@ export default function Courses() {
         navigate('/course/uiux');
       } else if (courseId === 3) {
         navigate('/course/reactnative');
+      } else if (courseId === 5) {
+        navigate('/course/python-data-analytics');
       }
     }
     setEnrollModal({ isOpen: false, course: null });
@@ -62,6 +64,8 @@ export default function Courses() {
       navigate('/course/uiux');
     } else if (courseId === 3) {
       navigate('/course/reactnative');
+    } else if (courseId === 5) {
+      navigate('/course/python-data-analytics');
     }
   };
 

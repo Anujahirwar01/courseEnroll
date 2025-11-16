@@ -645,7 +645,7 @@ const ProfileInside = () => {
                                                         </div>
                                                         <div className="mt-2">
                                                             <Link
-                                                                to={course.id === 1 ? '/course/fullstack' : course.id === 2 ? '/course/dsa' : course.id === 6 ? '/course/javascript' : course.id === 4 ? '/course/uiux' : course.id === 3 ? '/course/reactnative' : '#'}
+                                                                to={course.id === 1 ? '/course/fullstack' : course.id === 2 ? '/course/dsa' : course.id === 6 ? '/course/javascript' : course.id === 4 ? '/course/uiux' : course.id === 3 ? '/course/reactnative' : course.id === 5 ? '/course/python-data-analytics' : '#'}
                                                                 className="inline-flex items-center text-blue-600 hover:text-blue-700 text-xs font-medium"
                                                             >
                                                                 Continue Learning
